@@ -1,4 +1,4 @@
-import { theme as aragonTheme } from "@aragon/ui";
+import { SafeLink, theme as aragonTheme } from "@aragon/ui";
 import {
   Box,
   Card,
@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import ExpandMoreOutlinedIcon from "@material-ui/icons/ExpandMoreOutlined";
+import OpenInNewOutlinedIcon from "@material-ui/icons/OpenInNewOutlined";
 import SearchIcon from "@material-ui/icons/Search";
 import { withStyles } from "@material-ui/styles";
 import { DateTime } from "luxon";
@@ -126,7 +127,7 @@ const LatestBlocks = withStyles(
             </Box>
             <Box>
               {latestBlocks.map(
-                ({ hash, number, timestamp, size, transactions }: Block, i: number) => (
+                ({ hash, number, timestamp, size, transactions, gasUsed }: Block, i: number) => (
                   <Card key={i} className={classes.blockCard}>
                     <Grid container>
                       <Grid item lg={3}>
@@ -138,28 +139,56 @@ const LatestBlocks = withStyles(
                           </Box>
                         </Box>
                       </Grid>
-                      <Grid item lg={8}>
-                        <Box p={1}>
-                          <Typography variant="overline">
-                            {DateTime.fromSeconds(Number(timestamp)).toRelative()}
-                          </Typography>
+                      <Grid item lg={9}>
+                        <Box p={1} display="flex" justifyContent="space-between">
+                          <Box>
+                            <Typography variant="overline" color="textSecondary">
+                              {DateTime.fromSeconds(Number(timestamp)).toRelative()}
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Box display="flex" flexDirection="row" pb={1} px={1}>
+                        <Box display="flex" flexDirection="row" px={1}>
                           <Box mr={2} flexBasis="25%">
                             <Typography>
-                              {size} <Typography variant="caption">bytes</Typography>
+                              {size} <Typography variant="caption">Bytes</Typography>
                             </Typography>
                             <Divider />
-                            <Typography variant="caption">Size</Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              Size
+                            </Typography>
                           </Box>
                           <Box mr={2} flexBasis="25%">
                             <Typography>{transactions.length}</Typography>
                             <Divider />
-                            <Typography variant="caption">Tx. count</Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              Tx. Count
+                            </Typography>
+                          </Box>
+                          <Box mr={2} flexBasis="25%">
+                            <Typography>{gasUsed}</Typography>
+                            <Divider />
+                            <Typography variant="caption" color="textSecondary">
+                              Gas Used
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box display="flex" p={1} justifyContent="space-between">
+                          <Box mr={1}>
+                            <SafeLink href={`https://etherscan.io/block/${number}`} target="blank">
+                              <Typography variant="caption">
+                                <OpenInNewOutlinedIcon fontSize="inherit" /> View on etherscan.io
+                              </Typography>
+                            </SafeLink>
+                          </Box>
+                          <Box mr={1}>
+                            <Typography variant="caption">
+                              Display block txs details{" "}
+                              <ExpandMoreOutlinedIcon fontSize="inherit" />
+                            </Typography>
                           </Box>
                         </Box>
                       </Grid>
-                      <Grid item lg={1}>
+                      {/* <Grid item lg={1}>
                         <Box
                           display="flex"
                           justifyContent="center"
@@ -170,7 +199,7 @@ const LatestBlocks = withStyles(
                             <ExpandMoreOutlinedIcon />
                           </IconButton>
                         </Box>
-                      </Grid>
+                      </Grid> */}
                     </Grid>
                   </Card>
                 ),

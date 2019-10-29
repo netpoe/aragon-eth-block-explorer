@@ -1,3 +1,4 @@
+import { theme as aragonTheme } from "@aragon/ui";
 import { createMuiTheme } from "@material-ui/core/styles";
 import { darken, lighten } from "polished";
 
@@ -29,6 +30,10 @@ export const theme = createMuiTheme({
       light: lighten(0.05, "#ffdd00"),
       main: "#ffdd00",
       dark: darken(0.05, "#ffdd00"),
+    },
+    text: {
+      primary: aragonTheme.textPrimary,
+      secondary: aragonTheme.textSecondary,
     },
   },
   typography: {
