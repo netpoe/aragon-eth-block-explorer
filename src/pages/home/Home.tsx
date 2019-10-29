@@ -11,47 +11,21 @@ import {
   Paper,
   Typography,
 } from "@material-ui/core";
+import ExpandMoreOutlinedIcon from "@material-ui/icons/ExpandMoreOutlined";
 import SearchIcon from "@material-ui/icons/Search";
 import { withStyles } from "@material-ui/styles";
+import { DateTime } from "luxon";
 import React from "react";
+import { Block } from "web3-eth";
 import { theme } from "../../theme";
+import { enableEthereumWallet, getWeb3InstanceByNetworkID } from "../../web3";
 import { Header } from "./Header";
 
 const styles = createStyles({
-  fullHeightBox: {
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    [theme.breakpoints.down("sm")]: {
-      minHeight: "auto",
-    },
-  },
-  introTitle: {
-    [theme.breakpoints.down("sm")]: {
-      ...theme.typography.h4,
-    },
-  },
-  introText: {
-    [theme.breakpoints.down("sm")]: {
-      ...theme.typography.h5,
-    },
-  },
-  introTextBox: {
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    paddingBottom: theme.spacing(6),
-    paddingRight: theme.spacing(3),
-    [theme.breakpoints.down("sm")]: {
-      paddingTop: 180,
-      paddingRight: 0,
-    },
-  },
   main: {
     backgroundColor: aragonTheme.secondaryBackground,
     minHeight: "100vh",
+    [theme.breakpoints.down("sm")]: {},
   },
   searchContainer: {
     backgroundColor: aragonTheme.infoBackground,
@@ -79,20 +53,141 @@ const styles = createStyles({
   searchInputContainer: {
     marginTop: theme.spacing(3),
   },
-  blockNumberBox: {
-    backgroundColor: aragonTheme.badgeInfoBackground,
-    padding: theme.spacing(2),
-  },
-  blockNumber: {
-    color: aragonTheme.textPrimary,
-  },
-  blocksContainer: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
+});
+
+const LatestBlocks = withStyles(
+  createStyles({
+    ...styles,
+    blockCard: {
+      marginBottom: theme.spacing(2),
+    },
+    blockNumberBox: {
+      backgroundColor: aragonTheme.badgeInfoBackground,
+      padding: theme.spacing(2),
+      flexDirection: "column",
+      justifyContent: "center",
+      display: "flex",
+      height: "100%",
+    },
+    blockNumber: {
+      color: aragonTheme.textPrimary,
+    },
+    blocksContainer: {
+      paddingTop: theme.spacing(4),
+      paddingBottom: theme.spacing(4),
+    },
+    iconButton: {
+      borderRadius: "inherit",
+      height: "100%",
+    },
+  }),
+)(({ classes }: { classes: any }) => {
+  const [latestBlockNumber, setLatestBlockNumber] = React.useState<number>(0);
+  const [latestBlocks, setLatestBlocks] = React.useState<Block[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState(null);
+
+  const getLatestBlocks = async () => {
+    try {
+      const web3 = getWeb3InstanceByNetworkID();
+      let blockNumber = (await web3.eth.getBlockNumber()) + 1;
+      setLatestBlockNumber(blockNumber);
+      const blocks: Block[] = (await Promise.all(
+        Array(10)
+          .fill(null)
+          .map(block => web3.eth.getBlock(blockNumber--)),
+      )).filter(Boolean);
+      console.log(blocks);
+      setLatestBlocks(blocks);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
+  };
+
+  React.useEffect(() => {
+    getLatestBlocks();
+  }, []);
+
+  return (
+    <Container maxWidth="xl" className={classes.blocksContainer}>
+      <Grid container justify="center">
+        {Boolean(error) ? (
+          <Typography>Error</Typography>
+        ) : isLoading ? (
+          <Typography>Loading</Typography>
+        ) : (
+          <Grid item xs={12} lg={6}>
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                Showing the latest 10 blocks
+              </Typography>
+            </Box>
+            <Box>
+              {latestBlocks.map(
+                ({ hash, number, timestamp, size, transactions }: Block, i: number) => (
+                  <Card key={i} className={classes.blockCard}>
+                    <Grid container>
+                      <Grid item lg={3}>
+                        <Box p={1} height="100%">
+                          <Box className={classes.blockNumberBox}>
+                            <Typography align="center" className={classes.blockNumber} variant="h5">
+                              {number}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                      <Grid item lg={8}>
+                        <Box p={1}>
+                          <Typography variant="overline">
+                            {DateTime.fromSeconds(Number(timestamp)).toRelative()}
+                          </Typography>
+                        </Box>
+                        <Box display="flex" flexDirection="row" pb={1} px={1}>
+                          <Box mr={2} flexBasis="25%">
+                            <Typography>
+                              {size} <Typography variant="caption">bytes</Typography>
+                            </Typography>
+                            <Divider />
+                            <Typography variant="caption">Size</Typography>
+                          </Box>
+                          <Box mr={2} flexBasis="25%">
+                            <Typography>{transactions.length}</Typography>
+                            <Divider />
+                            <Typography variant="caption">Tx. count</Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                      <Grid item lg={1}>
+                        <Box
+                          display="flex"
+                          justifyContent="center"
+                          flexDirection="column"
+                          height="100%"
+                        >
+                          <IconButton className={classes.iconButton}>
+                            <ExpandMoreOutlinedIcon />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Card>
+                ),
+              )}
+            </Box>
+          </Grid>
+        )}
+      </Grid>
+    </Container>
+  );
 });
 
 export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
+  React.useEffect(() => {
+    enableEthereumWallet();
+  }, []);
+
   return (
     <>
       <Header />
@@ -118,37 +213,7 @@ export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
             </Grid>
           </Grid>
         </Container>
-        <Container maxWidth="xl" className={classes.blocksContainer}>
-          <Grid container justify="center">
-            <Grid item xs={12} lg={6}>
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  Showing the latest 10 blocks
-                </Typography>
-              </Box>
-              <Box>
-                <Card>
-                  <Grid container>
-                    <Grid item lg={3}>
-                      <Box p={1}>
-                        <Box className={classes.blockNumberBox}>
-                          <Typography align="center" className={classes.blockNumber} variant="h5">
-                            8830917
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grid>
-                    <Grid item lg={7}>
-                      <Box p={1}>
-                        <Typography variant="overline">14 seconds ago</Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Card>
-              </Box>
-            </Grid>
-          </Grid>
-        </Container>
+        <LatestBlocks />
       </Box>
     </>
   );
