@@ -1,6 +1,7 @@
 import { theme as aragonTheme } from "@aragon/ui";
 import {
   Box,
+  Card,
   Container,
   createStyles,
   Divider,
@@ -78,6 +79,17 @@ const styles = createStyles({
   searchInputContainer: {
     marginTop: theme.spacing(3),
   },
+  blockNumberBox: {
+    backgroundColor: aragonTheme.badgeInfoBackground,
+    padding: theme.spacing(2),
+  },
+  blockNumber: {
+    color: aragonTheme.textPrimary,
+  },
+  blocksContainer: {
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
+  },
 });
 
 export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
@@ -103,6 +115,37 @@ export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
                   <SearchIcon />
                 </IconButton>
               </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+        <Container maxWidth="xl" className={classes.blocksContainer}>
+          <Grid container justify="center">
+            <Grid item xs={12} lg={6}>
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Showing the latest 10 blocks
+                </Typography>
+              </Box>
+              <Box>
+                <Card>
+                  <Grid container>
+                    <Grid item lg={3}>
+                      <Box p={1}>
+                        <Box className={classes.blockNumberBox}>
+                          <Typography align="center" className={classes.blockNumber} variant="h5">
+                            8830917
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+                    <Grid item lg={7}>
+                      <Box p={1}>
+                        <Typography variant="overline">14 seconds ago</Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Card>
+              </Box>
             </Grid>
           </Grid>
         </Container>
