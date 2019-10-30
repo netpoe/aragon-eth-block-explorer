@@ -1,4 +1,6 @@
+import { SafeLink } from "@aragon/ui";
 import { AppBar, Box, Grid, Toolbar } from "@material-ui/core";
+import GitHubIcon from "@material-ui/icons/GitHub";
 import { createStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { Link } from "../../components";
@@ -31,7 +33,11 @@ export const Header = withStyles(styles)(({ classes }: { classes: any }) => (
       </Box>
       <Box>
         <Grid container>
-          <Grid item></Grid>
+          <Grid item>
+            <SafeLink href={`https://github.com/netpoe/aragon-eth-block-explorer`} target="blank">
+              <GitHubIcon />
+            </SafeLink>
+          </Grid>
         </Grid>
       </Box>
     </Toolbar>
