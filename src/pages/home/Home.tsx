@@ -15,8 +15,11 @@ import ExpandMoreOutlinedIcon from "@material-ui/icons/ExpandMoreOutlined";
 import OpenInNewOutlinedIcon from "@material-ui/icons/OpenInNewOutlined";
 import SearchIcon from "@material-ui/icons/Search";
 import { withStyles } from "@material-ui/styles";
+import BN from "bn.js";
 import { DateTime } from "luxon";
 import React from "react";
+import Web3 from "web3";
+import { Transaction } from "web3-core";
 import { Block } from "web3-eth";
 import { theme } from "../../theme";
 import { enableEthereumWallet, getWeb3InstanceByNetworkID } from "../../web3";
@@ -56,7 +59,107 @@ const styles = createStyles({
   },
 });
 
-const LatestBlocks = withStyles(
+export interface IBlockTransactionDetails {
+  transactions: Transaction[] | string[];
+  classes: any;
+}
+
+const BlockTransactionDetails = withStyles(
+  createStyles({
+    ...styles,
+    txHash: {
+      maxWidth: 280,
+    },
+  }),
+)(({ transactions, classes }: IBlockTransactionDetails) => {
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState(null);
+  const [txs, setTransactions] = React.useState<Transaction[]>([]);
+  const [totalValue, setTotalValue] = React.useState<BN>(new BN(0));
+  const [web3, setWeb3Instance] = React.useState<Web3>(getWeb3InstanceByNetworkID());
+
+  React.useEffect(() => {
+    getTransactionsDetails();
+  }, []);
+
+  const getTransactionsDetails = async () => {
+    try {
+      const txs: Transaction[] = (await Promise.all(
+        (transactions as string[]).map((tx: string) => web3.eth.getTransaction(tx)),
+      )).filter((tx: Transaction) => !web3.utils.toBN(tx.value).isZero());
+      setTotalValue(
+        txs.reduce<BN>((prev, curr) => prev.add(web3.utils.toBN(curr.value)), totalValue),
+      );
+      console.log(txs);
+      setTransactions(txs);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
+  };
+
+  return (
+    <Box p={1} bgcolor={aragonTheme.badgeAppBackground}>
+      {Boolean(error) ? (
+        <Typography>Error</Typography>
+      ) : isLoading ? (
+        <Typography>Loading</Typography>
+      ) : (
+        <>
+          <Box mb={2}>
+            <Grid container justify="space-between">
+              <Grid item>
+                <Typography variant="caption">
+                  Total value of block: ETH {web3.utils.fromWei(totalValue.toString(), "ether")}
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="caption">
+                  * Showing only {txs.length} txs with ETH value.
+                </Typography>
+              </Grid>
+            </Grid>
+          </Box>
+          {txs.map((tx: Transaction, i: number) => (
+            <Box mb={i === txs.length - 1 ? 0 : 2} key={i}>
+              <Grid container spacing={1}>
+                <Grid item lg={5}>
+                  <Box>
+                    <Typography>ETH {web3.utils.fromWei(tx.value, "ether")}</Typography>
+                    <Divider />
+                    <Typography variant="caption" color="textSecondary">
+                      Value
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item lg={7}>
+                  <Box>
+                    <SafeLink href={`https://etherscan.io/tx/${tx.hash}`} target="_blank">
+                      <Typography noWrap className={classes.txHash}>
+                        {tx.hash}
+                      </Typography>
+                    </SafeLink>
+                    <Divider />
+                    <Typography variant="caption" color="textSecondary">
+                      Tx. ID
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          ))}
+        </>
+      )}
+    </Box>
+  );
+});
+
+export interface IBlockCardProps extends Block {
+  classes: any;
+}
+
+const BlockCard = withStyles(
   createStyles({
     ...styles,
     blockCard: {
@@ -73,14 +176,92 @@ const LatestBlocks = withStyles(
     blockNumber: {
       color: aragonTheme.textPrimary,
     },
-    blocksContainer: {
-      paddingTop: theme.spacing(4),
-      paddingBottom: theme.spacing(4),
-    },
     iconButton: {
       borderRadius: "inherit",
       height: "100%",
     },
+    displayTxDetailsText: {
+      "&:hover": {
+        cursor: "pointer",
+      },
+    },
+  }),
+)(({ hash, number, timestamp, size, transactions, gasUsed, classes }: IBlockCardProps) => {
+  const [displayTxDetails, setDisplayTxDetails] = React.useState(false);
+
+  return (
+    <Card className={classes.blockCard}>
+      <Grid container>
+        <Grid item lg={3}>
+          <Box p={1} height="100%">
+            <Box className={classes.blockNumberBox}>
+              <Typography align="center" className={classes.blockNumber} variant="h5">
+                {number}
+              </Typography>
+            </Box>
+          </Box>
+        </Grid>
+        <Grid item lg={9}>
+          <Box p={1} display="flex" justifyContent="space-between">
+            <Box>
+              <Typography variant="overline" color="textSecondary">
+                {DateTime.fromSeconds(Number(timestamp)).toRelative()}
+              </Typography>
+            </Box>
+          </Box>
+          <Box display="flex" flexDirection="row" px={1}>
+            <Box mr={2} flexBasis="25%">
+              <Typography>
+                {size} <Typography variant="caption">Bytes</Typography>
+              </Typography>
+              <Divider />
+              <Typography variant="caption" color="textSecondary">
+                Size
+              </Typography>
+            </Box>
+            <Box mr={2} flexBasis="25%">
+              <Typography>{transactions.length}</Typography>
+              <Divider />
+              <Typography variant="caption" color="textSecondary">
+                Tx. Count
+              </Typography>
+            </Box>
+            <Box mr={2} flexBasis="25%">
+              <Typography>{gasUsed}</Typography>
+              <Divider />
+              <Typography variant="caption" color="textSecondary">
+                Gas Used
+              </Typography>
+            </Box>
+          </Box>
+          <Box display="flex" p={1} justifyContent="space-between">
+            <Box mr={1}>
+              <SafeLink href={`https://etherscan.io/block/${number}`} target="blank">
+                <Typography variant="caption">
+                  <OpenInNewOutlinedIcon fontSize="inherit" /> View on etherscan.io
+                </Typography>
+              </SafeLink>
+            </Box>
+            <Box mr={1}>
+              <Typography
+                variant="caption"
+                onClick={() => setDisplayTxDetails(!displayTxDetails)}
+                className={classes.displayTxDetailsText}
+              >
+                Display block txs details <ExpandMoreOutlinedIcon fontSize="inherit" />
+              </Typography>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+      {displayTxDetails && <BlockTransactionDetails transactions={transactions} />}
+    </Card>
+  );
+});
+
+const LatestBlocksContainer = withStyles(
+  createStyles({
+    ...styles,
   }),
 )(({ classes }: { classes: any }) => {
   const [latestBlockNumber, setLatestBlockNumber] = React.useState<number>(0);
@@ -112,102 +293,29 @@ const LatestBlocks = withStyles(
   }, []);
 
   return (
-    <Container maxWidth="xl" className={classes.blocksContainer}>
-      <Grid container justify="center">
-        {Boolean(error) ? (
-          <Typography>Error</Typography>
-        ) : isLoading ? (
-          <Typography>Loading</Typography>
-        ) : (
-          <Grid item xs={12} lg={6}>
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                Showing the latest 10 blocks
-              </Typography>
-            </Box>
-            <Box>
-              {latestBlocks.map(
-                ({ hash, number, timestamp, size, transactions, gasUsed }: Block, i: number) => (
-                  <Card key={i} className={classes.blockCard}>
-                    <Grid container>
-                      <Grid item lg={3}>
-                        <Box p={1} height="100%">
-                          <Box className={classes.blockNumberBox}>
-                            <Typography align="center" className={classes.blockNumber} variant="h5">
-                              {number}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Grid>
-                      <Grid item lg={9}>
-                        <Box p={1} display="flex" justifyContent="space-between">
-                          <Box>
-                            <Typography variant="overline" color="textSecondary">
-                              {DateTime.fromSeconds(Number(timestamp)).toRelative()}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <Box display="flex" flexDirection="row" px={1}>
-                          <Box mr={2} flexBasis="25%">
-                            <Typography>
-                              {size} <Typography variant="caption">Bytes</Typography>
-                            </Typography>
-                            <Divider />
-                            <Typography variant="caption" color="textSecondary">
-                              Size
-                            </Typography>
-                          </Box>
-                          <Box mr={2} flexBasis="25%">
-                            <Typography>{transactions.length}</Typography>
-                            <Divider />
-                            <Typography variant="caption" color="textSecondary">
-                              Tx. Count
-                            </Typography>
-                          </Box>
-                          <Box mr={2} flexBasis="25%">
-                            <Typography>{gasUsed}</Typography>
-                            <Divider />
-                            <Typography variant="caption" color="textSecondary">
-                              Gas Used
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <Box display="flex" p={1} justifyContent="space-between">
-                          <Box mr={1}>
-                            <SafeLink href={`https://etherscan.io/block/${number}`} target="blank">
-                              <Typography variant="caption">
-                                <OpenInNewOutlinedIcon fontSize="inherit" /> View on etherscan.io
-                              </Typography>
-                            </SafeLink>
-                          </Box>
-                          <Box mr={1}>
-                            <Typography variant="caption">
-                              Display block txs details{" "}
-                              <ExpandMoreOutlinedIcon fontSize="inherit" />
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Grid>
-                      {/* <Grid item lg={1}>
-                        <Box
-                          display="flex"
-                          justifyContent="center"
-                          flexDirection="column"
-                          height="100%"
-                        >
-                          <IconButton className={classes.iconButton}>
-                            <ExpandMoreOutlinedIcon />
-                          </IconButton>
-                        </Box>
-                      </Grid> */}
-                    </Grid>
-                  </Card>
-                ),
-              )}
-            </Box>
-          </Grid>
-        )}
-      </Grid>
+    <Container maxWidth="xl">
+      <Box py={6}>
+        <Grid container justify="center">
+          {Boolean(error) ? (
+            <Typography>Error</Typography>
+          ) : isLoading ? (
+            <Typography>Loading</Typography>
+          ) : (
+            <Grid item xs={12} lg={6}>
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Showing the latest 10 blocks
+                </Typography>
+              </Box>
+              <Box>
+                {latestBlocks.map((block: Block, i: number) => (
+                  <BlockCard key={i} {...block} />
+                ))}
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </Box>
     </Container>
   );
 });
@@ -242,7 +350,7 @@ export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
             </Grid>
           </Grid>
         </Container>
-        <LatestBlocks />
+        <LatestBlocksContainer />
       </Box>
     </>
   );
