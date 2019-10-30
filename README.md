@@ -1,6 +1,18 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Aragon Block Explorer
+
+Simple Ethereum block explorer.
+
+- [x] Display at least the ten latest blocks.
+- [x] Allow the user to see the transactions from a block. Only the transactions sending Ether should be displayed.
+- [x] Allow the user to see some details about a transaction.
+- [x] Bonus: search for any valid block number
+- [x] Bonus: searching for a valid transaction ID will display the block that contains it
+- [x] Bonus: get the total value of ETH transferred for each block
+- [x] Bonus: load 1 more block
 
 ## Available Scripts
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 In the project directory, you can run:
 
