@@ -292,6 +292,17 @@ export interface ILatestBlocksContainer {
 const LatestBlocksContainer = withStyles(
   createStyles({
     ...styles,
+    loadMoreBox: {
+      border: `3px dotted ${aragonTheme.contentBorderActive}`,
+      borderRadius: 7,
+      height: 128,
+      "&:hover": {
+        cursor: "pointer",
+        "& p": {
+          color: theme.palette.text.primary,
+        },
+      },
+    },
   }),
 )(({ blockHeight, classes }: ILatestBlocksContainer) => {
   const [latestBlockNumber, setLatestBlockNumber] = React.useState<number>(0);
@@ -300,6 +311,22 @@ const LatestBlocksContainer = withStyles(
   const [error, setError] = React.useState(null);
   const [web3, setWeb3Instance] = React.useState<Web3>(getWeb3InstanceByNetworkID());
   const [latestBlocksCount, setLatestBlocksCount] = React.useState<number>(10);
+
+  const appendBlock = async (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    try {
+      const block: Block = await web3.eth.getBlock(
+        latestBlocks[latestBlocks.length - 1].number - 1,
+      );
+      console.log(block);
+      setLatestBlocks([...latestBlocks, block].filter(Boolean));
+      setLatestBlocksCount(latestBlocks.length + 1);
+      setIsLoading(false);
+      setError(null);
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
+  };
 
   const getLatestBlocks = async () => {
     try {
@@ -342,6 +369,8 @@ const LatestBlocksContainer = withStyles(
     }
   }, [blockHeight]);
 
+  React.useEffect(() => {}, [latestBlocksCount]);
+
   return (
     <Container maxWidth="xl">
       <Box py={6}>
@@ -369,6 +398,16 @@ const LatestBlocksContainer = withStyles(
                     {latestBlocks.map((block: Block, i: number) => (
                       <BlockCard key={i} {...block} />
                     ))}
+                    <Box
+                      onClick={appendBlock}
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="center"
+                      textAlign="center"
+                      className={classes.loadMoreBox}
+                    >
+                      <Typography color="textSecondary">Load 1 block more</Typography>
+                    </Box>
                   </>
                 ) : (
                   <Card>
@@ -434,8 +473,8 @@ export const SearchInputContainer = withStyles(
 
     if (web3.utils.isHexStrict(value)) {
       const tx: Transaction = await web3.eth.getTransaction(value);
-      const { blockNumber } = tx;
       console.log(tx);
+      const { blockNumber } = tx;
       onValidSearchTerm(Number(blockNumber));
       return;
     }
