@@ -1,5 +1,14 @@
 import { theme as aragonTheme } from "@aragon/ui";
-import { Container, createStyles, Divider, Grid, IconButton, InputBase, Paper, Typography } from "@material-ui/core";
+import {
+  Container,
+  createStyles,
+  Divider,
+  Grid,
+  IconButton,
+  InputBase,
+  Paper,
+  Typography,
+} from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import { withStyles } from "@material-ui/styles";
 import React from "react";
@@ -31,7 +40,7 @@ export const SearchInputContainer = withStyles(
       marginTop: theme.spacing(3),
       [theme.breakpoints.down("sm")]: {
         marginTop: theme.spacing(1),
-      }
+      },
     },
     searchContainer: {
       backgroundColor: aragonTheme.infoBackground,
