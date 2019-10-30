@@ -1,6 +1,7 @@
 import { theme as aragonTheme } from "@aragon/ui";
 import { createMuiTheme } from "@material-ui/core/styles";
 import { darken, lighten } from "polished";
+export * from "./styles";
 
 export const spacingUnit = 16;
 
