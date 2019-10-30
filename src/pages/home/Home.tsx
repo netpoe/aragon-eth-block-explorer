@@ -313,6 +313,7 @@ const LatestBlocksContainer = withStyles(
       console.log(blocks);
       setLatestBlocks(blocks);
       setIsLoading(false);
+      setError(null);
     } catch (error) {
       console.error(error);
       setError(error);
@@ -326,6 +327,7 @@ const LatestBlocksContainer = withStyles(
       console.log(block);
       setLatestBlocks([block].filter(Boolean));
       setIsLoading(false);
+      setError(null);
     } catch (error) {
       console.error(error);
       setError(error);
@@ -424,18 +426,22 @@ export const SearchInputContainer = withStyles(
   const [value, setValue] = React.useState<string>("");
   let inputRef = React.createRef<HTMLInputElement>();
 
-  const onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyPress = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") {
       return;
     }
     console.log(value);
 
-    if (Boolean(Number(value))) {
-      onValidSearchTerm(Number(value));
+    if (web3.utils.isHexStrict(value)) {
+      const tx: Transaction = await web3.eth.getTransaction(value);
+      const { blockNumber } = tx;
+      console.log(tx);
+      onValidSearchTerm(Number(blockNumber));
       return;
     }
 
-    if (web3.utils.isHexStrict(value)) {
+    if (Boolean(Number(value))) {
+      onValidSearchTerm(Number(value));
       return;
     }
 
