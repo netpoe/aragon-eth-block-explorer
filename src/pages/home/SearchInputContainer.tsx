@@ -61,6 +61,11 @@ export const SearchInputContainer = withStyles(
     if (e.key !== "Enter") {
       return;
     }
+
+    resolveSearch();
+  };
+
+  const resolveSearch = async () => {
     console.log(value);
 
     if (web3.utils.isHexStrict(value)) {
@@ -98,7 +103,11 @@ export const SearchInputContainer = withStyles(
               autoFocus
             />
             <Divider className={classes.divider} orientation="vertical" />
-            <IconButton className={classes.iconButton} aria-label="search">
+            <IconButton
+              className={classes.iconButton}
+              aria-label="search"
+              onClick={() => resolveSearch()}
+            >
               <SearchIcon />
             </IconButton>
           </Paper>
