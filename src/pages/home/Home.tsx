@@ -284,23 +284,29 @@ const BlockCard = withStyles(
   );
 });
 
+export interface ILatestBlocksContainer {
+  blockHeight: number | null;
+  classes: any;
+}
+
 const LatestBlocksContainer = withStyles(
   createStyles({
     ...styles,
   }),
-)(({ classes }: { classes: any }) => {
+)(({ blockHeight, classes }: ILatestBlocksContainer) => {
   const [latestBlockNumber, setLatestBlockNumber] = React.useState<number>(0);
   const [latestBlocks, setLatestBlocks] = React.useState<Block[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState(null);
+  const [web3, setWeb3Instance] = React.useState<Web3>(getWeb3InstanceByNetworkID());
+  const [latestBlocksCount, setLatestBlocksCount] = React.useState<number>(10);
 
   const getLatestBlocks = async () => {
     try {
-      const web3 = getWeb3InstanceByNetworkID();
       let blockNumber = (await web3.eth.getBlockNumber()) + 1;
       setLatestBlockNumber(blockNumber);
       const blocks: Block[] = (await Promise.all(
-        Array(10)
+        Array(latestBlocksCount)
           .fill(null)
           .map(block => web3.eth.getBlock(blockNumber--)),
       )).filter(Boolean);
@@ -313,9 +319,26 @@ const LatestBlocksContainer = withStyles(
     }
   };
 
+  const getBlockAtHeight = async () => {
+    try {
+      setLatestBlockNumber(blockHeight as number);
+      const block: Block = await web3.eth.getBlock(blockHeight as number);
+      console.log(block);
+      setLatestBlocks([block].filter(Boolean));
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
+  };
+
   React.useEffect(() => {
-    getLatestBlocks();
-  }, []);
+    if (Boolean(blockHeight)) {
+      getBlockAtHeight();
+    } else {
+      getLatestBlocks();
+    }
+  }, [blockHeight]);
 
   return (
     <Container maxWidth="xl">
@@ -328,14 +351,30 @@ const LatestBlocksContainer = withStyles(
           ) : (
             <Grid item xs={12} lg={6}>
               <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  Showing the latest 10 blocks
-                </Typography>
+                {Boolean(blockHeight) ? (
+                  <Typography variant="subtitle1" gutterBottom>
+                    Showing block at {blockHeight}:
+                  </Typography>
+                ) : (
+                  <Typography variant="subtitle1" gutterBottom>
+                    Showing the latest {latestBlocksCount} blocks
+                  </Typography>
+                )}
               </Box>
               <Box>
-                {latestBlocks.map((block: Block, i: number) => (
-                  <BlockCard key={i} {...block} />
-                ))}
+                {latestBlocks.length > 0 ? (
+                  <>
+                    {latestBlocks.map((block: Block, i: number) => (
+                      <BlockCard key={i} {...block} />
+                    ))}
+                  </>
+                ) : (
+                  <Card>
+                    <Box>
+                      <Typography>There are no blocks left.</Typography>
+                    </Box>
+                  </Card>
+                )}
               </Box>
             </Grid>
           )}
@@ -344,6 +383,11 @@ const LatestBlocksContainer = withStyles(
     </Container>
   );
 });
+
+export interface ISearchInputContainer {
+  onValidSearchTerm: (height: number | null) => void;
+  classes: any;
+}
 
 export const SearchInputContainer = withStyles(
   createStyles({
@@ -375,7 +419,29 @@ export const SearchInputContainer = withStyles(
       alignItems: "center",
     },
   }),
-)(({ classes }: { classes: any }) => {
+)(({ onValidSearchTerm, classes }: ISearchInputContainer) => {
+  const [web3, setWeb3Instance] = React.useState<Web3>(getWeb3InstanceByNetworkID());
+  const [value, setValue] = React.useState<string>("");
+  let inputRef = React.createRef<HTMLInputElement>();
+
+  const onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") {
+      return;
+    }
+    console.log(value);
+
+    if (Boolean(Number(value))) {
+      onValidSearchTerm(Number(value));
+      return;
+    }
+
+    if (web3.utils.isHexStrict(value)) {
+      return;
+    }
+
+    onValidSearchTerm(null);
+  };
+
   return (
     <Container maxWidth="xl" className={classes.searchContainer}>
       <Typography align="center" variant="h3" gutterBottom>
@@ -385,6 +451,10 @@ export const SearchInputContainer = withStyles(
         <Grid item xs={12} lg={6}>
           <Paper className={classes.root}>
             <InputBase
+              ref={inputRef}
+              onKeyPress={onKeyPress}
+              onChange={e => setValue(e.target.value)}
+              value={value}
               className={classes.input}
               placeholder="Block no. or tx id..."
               inputProps={{ "aria-label": "txid" }}
@@ -411,6 +481,8 @@ export const Home = withStyles(
     },
   }),
 )(({ classes }: { classes: any }) => {
+  const [blockHeight, setBlockHeight] = React.useState<number | null>(null);
+
   React.useEffect(() => {
     enableEthereumWallet();
   }, []);
@@ -419,8 +491,10 @@ export const Home = withStyles(
     <>
       <Header />
       <Box bgcolor="primary.main" className={classes.main}>
-        <SearchInputContainer />
-        <LatestBlocksContainer />
+        <SearchInputContainer
+          onValidSearchTerm={(height: number | null) => setBlockHeight(height)}
+        />
+        <LatestBlocksContainer blockHeight={blockHeight} />
       </Box>
     </>
   );
