@@ -26,39 +26,7 @@ import { theme } from "../../theme";
 import { enableEthereumWallet, getWeb3InstanceByNetworkID } from "../../web3";
 import { Header } from "./Header";
 
-const styles = createStyles({
-  main: {
-    backgroundColor: aragonTheme.secondaryBackground,
-    minHeight: "100vh",
-    [theme.breakpoints.down("sm")]: {},
-  },
-  searchContainer: {
-    backgroundColor: aragonTheme.infoBackground,
-    minHeight: "35vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-  },
-  root: {
-    padding: "2px 4px",
-    display: "flex",
-    alignItems: "center",
-  },
-  input: {
-    marginLeft: theme.spacing(1),
-    flex: 1,
-  },
-  iconButton: {
-    padding: 10,
-  },
-  divider: {
-    height: 28,
-    margin: 4,
-  },
-  searchInputContainer: {
-    marginTop: theme.spacing(3),
-  },
-});
+const styles = createStyles({});
 
 export interface IBlockTransactionDetails {
   transactions: Transaction[] | string[];
@@ -377,7 +345,72 @@ const LatestBlocksContainer = withStyles(
   );
 });
 
-export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
+export const SearchInputContainer = withStyles(
+  createStyles({
+    ...styles,
+    input: {
+      marginLeft: theme.spacing(1),
+      flex: 1,
+    },
+    iconButton: {
+      padding: 10,
+    },
+    divider: {
+      height: 28,
+      margin: 4,
+    },
+    searchInputContainer: {
+      marginTop: theme.spacing(3),
+    },
+    searchContainer: {
+      backgroundColor: aragonTheme.infoBackground,
+      minHeight: "35vh",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    },
+    root: {
+      padding: "2px 4px",
+      display: "flex",
+      alignItems: "center",
+    },
+  }),
+)(({ classes }: { classes: any }) => {
+  return (
+    <Container maxWidth="xl" className={classes.searchContainer}>
+      <Typography align="center" variant="h3" gutterBottom>
+        Aragon Block Explorer
+      </Typography>
+      <Grid container justify="center" className={classes.searchInputContainer}>
+        <Grid item xs={12} lg={6}>
+          <Paper className={classes.root}>
+            <InputBase
+              className={classes.input}
+              placeholder="Block no. or tx id..."
+              inputProps={{ "aria-label": "txid" }}
+              autoFocus
+            />
+            <Divider className={classes.divider} orientation="vertical" />
+            <IconButton className={classes.iconButton} aria-label="search">
+              <SearchIcon />
+            </IconButton>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+});
+
+export const Home = withStyles(
+  createStyles({
+    ...styles,
+    main: {
+      backgroundColor: aragonTheme.secondaryBackground,
+      minHeight: "100vh",
+      [theme.breakpoints.down("sm")]: {},
+    },
+  }),
+)(({ classes }: { classes: any }) => {
   React.useEffect(() => {
     enableEthereumWallet();
   }, []);
@@ -386,27 +419,7 @@ export const Home = withStyles(styles)(({ classes }: { classes: any }) => {
     <>
       <Header />
       <Box bgcolor="primary.main" className={classes.main}>
-        <Container maxWidth="xl" className={classes.searchContainer}>
-          <Typography align="center" variant="h3" gutterBottom>
-            Aragon Block Explorer
-          </Typography>
-          <Grid container justify="center" className={classes.searchInputContainer}>
-            <Grid item xs={12} lg={6}>
-              <Paper className={classes.root}>
-                <InputBase
-                  className={classes.input}
-                  placeholder="Block no. or tx id..."
-                  inputProps={{ "aria-label": "txid" }}
-                  autoFocus
-                />
-                <Divider className={classes.divider} orientation="vertical" />
-                <IconButton className={classes.iconButton} aria-label="search">
-                  <SearchIcon />
-                </IconButton>
-              </Paper>
-            </Grid>
-          </Grid>
-        </Container>
+        <SearchInputContainer />
         <LatestBlocksContainer />
       </Box>
     </>
