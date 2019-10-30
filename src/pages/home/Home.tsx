@@ -6,6 +6,7 @@ import {
   createStyles,
   Divider,
   Grid,
+  Hidden,
   IconButton,
   InputBase,
   Paper,
@@ -86,7 +87,7 @@ const BlockTransactionDetails = withStyles(
     try {
       const txs: Transaction[] = (await Promise.all(
         (transactions as string[]).map((tx: string) => web3.eth.getTransaction(tx)),
-      )).filter((tx: Transaction) => !web3.utils.toBN(tx.value).isZero());
+      )).filter((tx: Transaction) => Boolean(tx) && !web3.utils.toBN(tx.value).isZero());
       setTotalValue(
         txs.reduce<BN>((prev, curr) => prev.add(web3.utils.toBN(curr.value)), totalValue),
       );
@@ -133,7 +134,7 @@ const BlockTransactionDetails = withStyles(
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item lg={7}>
+                <Grid item lg={7} xs={12}>
                   <Box>
                     <SafeLink href={`https://etherscan.io/tx/${tx.hash}`} target="_blank">
                       <Typography noWrap className={classes.txHash}>
@@ -185,15 +186,47 @@ const BlockCard = withStyles(
         cursor: "pointer",
       },
     },
+    blockNumberBoxWrapper: {
+      [theme.breakpoints.down("sm")]: {
+        paddingTop: 0,
+      },
+    },
   }),
 )(({ hash, number, timestamp, size, transactions, gasUsed, classes }: IBlockCardProps) => {
   const [displayTxDetails, setDisplayTxDetails] = React.useState(false);
 
   return (
     <Card className={classes.blockCard}>
+      <Hidden smUp>
+        <Grid container justify="space-between">
+          <Grid item xs={6}>
+            <Box px={1}>
+              <Typography variant="overline" color="textSecondary">
+                {DateTime.fromSeconds(Number(timestamp)).toRelative()}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={6}>
+            <Box
+              px={1}
+              minHeight={28}
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              textAlign="right"
+            >
+              <SafeLink href={`https://etherscan.io/block/${number}`} target="blank">
+                <Typography variant="caption">
+                  View on etherscan.io <OpenInNewOutlinedIcon fontSize="inherit" />
+                </Typography>
+              </SafeLink>
+            </Box>
+          </Grid>
+        </Grid>
+      </Hidden>
       <Grid container>
-        <Grid item lg={3}>
-          <Box p={1} height="100%">
+        <Grid item lg={3} xs={12}>
+          <Box p={1} height="100%" className={classes.blockNumberBoxWrapper}>
             <Box className={classes.blockNumberBox}>
               <Typography align="center" className={classes.blockNumber} variant="h5">
                 {number}
@@ -201,59 +234,83 @@ const BlockCard = withStyles(
             </Box>
           </Box>
         </Grid>
-        <Grid item lg={9}>
-          <Box p={1} display="flex" justifyContent="space-between">
-            <Box>
+        <Grid item lg={9} xs={12}>
+          <Hidden mdDown>
+            <Box p={1}>
               <Typography variant="overline" color="textSecondary">
                 {DateTime.fromSeconds(Number(timestamp)).toRelative()}
               </Typography>
             </Box>
-          </Box>
-          <Box display="flex" flexDirection="row" px={1}>
-            <Box mr={2} flexBasis="25%">
-              <Typography>
-                {size} <Typography variant="caption">Bytes</Typography>
-              </Typography>
-              <Divider />
-              <Typography variant="caption" color="textSecondary">
-                Size
-              </Typography>
-            </Box>
-            <Box mr={2} flexBasis="25%">
-              <Typography>{transactions.length}</Typography>
-              <Divider />
-              <Typography variant="caption" color="textSecondary">
-                Tx. Count
-              </Typography>
-            </Box>
-            <Box mr={2} flexBasis="25%">
-              <Typography>{gasUsed}</Typography>
-              <Divider />
-              <Typography variant="caption" color="textSecondary">
-                Gas Used
-              </Typography>
-            </Box>
-          </Box>
-          <Box display="flex" p={1} justifyContent="space-between">
-            <Box mr={1}>
-              <SafeLink href={`https://etherscan.io/block/${number}`} target="blank">
-                <Typography variant="caption">
-                  <OpenInNewOutlinedIcon fontSize="inherit" /> View on etherscan.io
+          </Hidden>
+          <Grid container>
+            <Grid item lg={3} xs={4}>
+              <Box px={1}>
+                <Typography>
+                  {size} <Typography variant="caption">Bytes</Typography>
                 </Typography>
-              </SafeLink>
-            </Box>
-            <Box mr={1}>
-              <Typography
-                variant="caption"
-                onClick={() => setDisplayTxDetails(!displayTxDetails)}
-                className={classes.displayTxDetailsText}
-              >
-                Display block txs details <ExpandMoreOutlinedIcon fontSize="inherit" />
-              </Typography>
-            </Box>
-          </Box>
+                <Divider />
+                <Typography variant="caption" color="textSecondary">
+                  Size
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item lg={3} xs={4}>
+              <Box px={1}>
+                <Typography>{transactions.length}</Typography>
+                <Divider />
+                <Typography variant="caption" color="textSecondary">
+                  Tx. Count
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item lg={3} xs={4}>
+              <Box px={1}>
+                <Typography>{gasUsed}</Typography>
+                <Divider />
+                <Typography variant="caption" color="textSecondary">
+                  Gas Used
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+          <Hidden mdDown>
+            <Grid container justify="space-between">
+              <Grid item lg={6} xs={6}>
+                <Box p={1}>
+                  <SafeLink href={`https://etherscan.io/block/${number}`} target="blank">
+                    <Typography variant="caption">
+                      <OpenInNewOutlinedIcon fontSize="inherit" /> View on etherscan.io
+                    </Typography>
+                  </SafeLink>
+                </Box>
+              </Grid>
+              <Grid item lg={6} xs={6}>
+                <Box p={1} display="flex" justifyContent="flex-end">
+                  <Typography
+                    variant="caption"
+                    align="right"
+                    onClick={() => setDisplayTxDetails(!displayTxDetails)}
+                    className={classes.displayTxDetailsText}
+                  >
+                    Display block txs details <ExpandMoreOutlinedIcon fontSize="inherit" />
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Hidden>
         </Grid>
       </Grid>
+      <Hidden smUp>
+        <Box p={1} textAlign="center">
+          <Typography
+            variant="caption"
+            onClick={() => setDisplayTxDetails(!displayTxDetails)}
+            className={classes.displayTxDetailsText}
+          >
+            Display block txs details <ExpandMoreOutlinedIcon fontSize="inherit" />
+          </Typography>
+        </Box>
+      </Hidden>
       {displayTxDetails && <BlockTransactionDetails transactions={transactions} />}
     </Card>
   );
