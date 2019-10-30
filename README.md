@@ -9,6 +9,15 @@ Simple Ethereum block explorer.
 - [x] Bonus: searching for a valid transaction ID will display the block that contains it
 - [x] Bonus: get the total value of ETH transferred for each block
 - [x] Bonus: load 1 more block
+- [x] Bonus: web & mobile browser interfaces
+
+## Code structure
+
+The project is structured in a very intuitive way with a base `Home` component in the `src/pages` directory and its nested components are located in the same directory.
+
+"Global" components, meaning those that are meant to be reused, are located in `src/components`.
+
+Web3 methods live inside `src/web`.
 
 ## Available Scripts
 
