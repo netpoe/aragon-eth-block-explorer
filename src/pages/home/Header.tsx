@@ -1,50 +1,46 @@
 import { SafeLink } from "@aragon/ui";
-import { AppBar, Box, Grid, Toolbar } from "@material-ui/core";
+import { AppBar, Box, Grid, Toolbar, Typography } from "@material-ui/core";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import { createStyles, withStyles } from "@material-ui/styles";
 import React from "react";
-import { Link } from "../../components";
+import { ReactComponent as MetamaskIcon } from "../../assets/svg/metamask-logo.svg";
 import { theme } from "../../theme";
-import { routes } from "../routes";
+import { getWeb3NetworkID, getWeb3NetworkNameByNetworkID, isMetamaskSet } from "../../web3";
 
-const styles = createStyles({
-  appBar: {
-    position: "absolute",
-    backgroundColor: "transparent",
-    [theme.breakpoints.down("sm")]: {
+export const Header = withStyles(
+  createStyles({
+    appBar: {
       position: "absolute",
-      marginBottom: theme.spacing(6),
+      backgroundColor: "transparent",
+      [theme.breakpoints.down("sm")]: {
+        position: "absolute",
+        marginBottom: theme.spacing(6),
+      },
     },
-  },
-  list: {
-    padding: 0,
-    margin: 0,
-  },
-  listItem: {
-    justifyContent: "flex-end",
-  },
-});
-
-export const Header = withStyles(styles)(({ classes }: { classes: any }) => (
+    toolbar: {
+      justifyContent: "space-between",
+    },
+  }),
+)(({ classes }: { classes: any }) => (
   <AppBar className={classes.appBar} color="inherit" elevation={0}>
-    <Toolbar style={{ justifyContent: "space-between" }}>
-      <Box py={2}>
-        <Link to={routes.root}></Link>
+    <Toolbar className={classes.toolbar}>
+      <Box>
+        <SafeLink href={`https://github.com/netpoe/aragon-eth-block-explorer`} target="blank">
+          <GitHubIcon />
+        </SafeLink>
       </Box>
       <Box>
         <Grid container>
           <Grid item>
-            <SafeLink href={`https://github.com/netpoe/aragon-eth-block-explorer`} target="blank">
-              <GitHubIcon />
-            </SafeLink>
+            <Box display="flex" justifyContent="flex-end">
+              <Box width={24}>{isMetamaskSet() && <MetamaskIcon />}</Box>
+              <Box>
+                <Typography>{getWeb3NetworkNameByNetworkID(getWeb3NetworkID())}</Typography>
+              </Box>
+            </Box>
           </Grid>
         </Grid>
       </Box>
     </Toolbar>
   </AppBar>
 ));
-
-const linkStyles = {
-  color: theme.palette.primary.main,
-  textDecoration: "none",
-};

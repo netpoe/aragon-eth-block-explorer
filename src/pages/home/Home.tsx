@@ -3,7 +3,6 @@ import { Box, createStyles } from "@material-ui/core";
 import { withStyles } from "@material-ui/styles";
 import React from "react";
 import { styles, theme } from "../../theme";
-import { enableEthereumWallet } from "../../web3";
 import { Header } from "./Header";
 import { LatestBlocksContainer } from "./LatestBlocksContainer";
 import { SearchInputContainer } from "./SearchInputContainer";
@@ -19,10 +18,6 @@ export const Home = withStyles(
   }),
 )(({ classes }: { classes: any }) => {
   const [blockHeight, setBlockHeight] = React.useState<number | null>(null);
-
-  React.useEffect(() => {
-    enableEthereumWallet();
-  }, []);
 
   return (
     <>
