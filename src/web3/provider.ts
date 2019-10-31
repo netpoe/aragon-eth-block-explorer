@@ -6,17 +6,23 @@ declare global {
   }
 }
 
-export type Web3NetworkID = "1" | "3";
+export type Web3NetworkID = "1" | "3" | "42" | "4" | "5";
 export type Web3NetworkIDMap = { [network in Web3NetworkID]: string };
 
 const web3ProvidersByNetworkID: Web3NetworkIDMap = {
   "1": "https://mainnet.infura.io/v3/da793a58671e4d7bac564212a46da440",
   "3": "https://ropsten.infura.io/v3/da793a58671e4d7bac564212a46da440",
+  "42": "https://kovan.infura.io/v3/da793a58671e4d7bac564212a46da440",
+  "4": "https://rinkeby.infura.io/v3/da793a58671e4d7bac564212a46da440",
+  "5": "https://goerli.infura.io/v3/da793a58671e4d7bac564212a46da440",
 };
 
 export const web3NetworkNameByNetworkID: Web3NetworkIDMap = {
   "1": "mainnet",
   "3": "ropsten",
+  "42": "kovan",
+  "4": "rinkeby",
+  "5": "goerli",
 };
 
 export const getWeb3NetworkNameByNetworkID = (networkID: Web3NetworkID = "1"): string =>

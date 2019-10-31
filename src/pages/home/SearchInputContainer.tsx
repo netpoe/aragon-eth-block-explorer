@@ -47,9 +47,9 @@ export const SearchInputContainer = withStyles(
       minHeight: "35vh",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "center",
+      justifyContent: "flex-end",
+      paddingBottom: theme.spacing(6),
       [theme.breakpoints.down("sm")]: {
-        minHeight: "42vh",
         "& h3": {
           fontSize: theme.typography.h5.fontSize,
         },

@@ -10,6 +10,8 @@ Simple Ethereum block explorer.
 - [x] Bonus: get the total value of ETH transferred for each block
 - [x] Bonus: load 1 more block
 - [x] Bonus: web & mobile browser interfaces
+- [x] Bonus: detects metamask networkVersion otherwise it defaults to Infura provider
+- [x] Bonus: loads blocks by network
 
 ## Code structure
 
