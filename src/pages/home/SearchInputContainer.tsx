@@ -43,7 +43,8 @@ export const SearchInputContainer = withStyles(
       },
     },
     searchContainer: {
-      backgroundColor: aragonTheme.infoBackground,
+      background: `linear-gradient(180deg, ${aragonTheme.gradientStartActive}, ${aragonTheme.gradientStart})`,
+      color: "white",
       minHeight: "35vh",
       display: "flex",
       flexDirection: "column",
@@ -95,7 +96,7 @@ export const SearchInputContainer = withStyles(
 
   return (
     <Container maxWidth="xl" className={classes.searchContainer}>
-      <Typography align="center" variant="h3" gutterBottom>
+      <Typography align="center" variant="h3" gutterBottom color="inherit">
         Aragon Block Explorer
       </Typography>
       <Grid container justify="center" className={classes.searchInputContainer}>
