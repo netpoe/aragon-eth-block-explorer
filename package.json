@@ -9,7 +9,7 @@
     "@types/lodash": "^4.14.144",
     "@types/luxon": "^1.15.2",
     "@types/web3": "^1.2.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "luxon": "^1.20.0",
     "polished": "^3.4.1",
     "react": "^16.11.0",
